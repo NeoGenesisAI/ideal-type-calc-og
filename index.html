@@ -74,6 +74,10 @@
     const day = ms / 86400000;
     return {date:requestedDate,index:((day % prompts.length) + prompts.length) % prompts.length};
   }
+  // A dated invitation should open with the question the friend shared.
+  if (sharedDay()) {
+    document.querySelector('.hero').insertAdjacentElement('afterend', document.querySelector('.daily-preview'));
+  }
   function visibleDay() { return sharedDay() || today(); }
   function read(day) {
     try {
