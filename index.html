@@ -56,7 +56,7 @@
     if (!navigator.share) { await copyLink(); return; }
     shareButton.disabled = true;
     try {
-      await navigator.share({title: '10문항으로 찾는 내 이상형', text: '약 1분 30초로 내 취향을 찾고, 서로의 결과를 이야기해 봐요.', url});
+      await navigator.share({title: '이상형 찾기 테스트', text: '이상형 찾기 테스트에서 10문항으로 내 취향을 찾아봐요. 링크가 열리지 않으면 토스 앱에서 \"이상형 찾기 테스트\"를 검색해 시작할 수 있어요.', url});
     } catch (error) {
       if (error.name === 'AbortError') status.textContent = '공유를 취소했어요.';
       else await copyLink();
