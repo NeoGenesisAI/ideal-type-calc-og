@@ -116,6 +116,7 @@
   const buttons = [document.getElementById('daily-a'), document.getElementById('daily-b')];
   const status = document.getElementById('daily-status');
   let shownDay;
+  let lastStoredPick;
   function today() {
     const day = Math.floor((Date.now() + 9 * 3600000) / 86400000);
     return {date:new Date(day * 86400000).toISOString().slice(0,10), index:((day % prompts.length) + prompts.length) % prompts.length};
@@ -155,7 +156,18 @@
     renderHistory();
     const day = visibleDay();
     const archived = day.date !== today().date;
-    if (shownDay?.date === day.date && shownDay?.archived === archived) return;
+    if (shownDay?.date === day.date && shownDay?.archived === archived) {
+      if (!archived) {
+        const storedPick = read(day);
+        if (storedPick !== lastStoredPick) {
+          lastStoredPick = storedPick;
+          document.getElementById('share-with-choice').checked = false;
+          showPick(storedPick);
+          status.textContent = storedPick ? '다른 탭에서 저장한 오늘의 답변을 반영했어요. ' + prompts[day.index][3] : '저장된 오늘의 답변이 지워졌어요. 다시 골라주세요.';
+        }
+      }
+      return;
+    }
     shownDay = {...day,archived};
     const [question,a,b,hint] = prompts[day.index];
     document.getElementById('daily-date').textContent = day.date + ' · 한국시간 기준';
@@ -169,6 +181,7 @@
     buttons[0].textContent = a; buttons[1].textContent = b;
     const record = archived ? readHistory().find(value => value.date === day.date && value.index === day.index) : null;
     const pick = archived ? record?.pick || null : read(day); showPick(pick);
+    lastStoredPick = read(day);
     status.textContent = pick ? (archived ? '이 브라우저에 남은 지난 선택이에요. ' : '오늘 고른 답변이에요. ') + hint : '';
   }
   buttons.forEach((button,i) => button.addEventListener('click', () => {
@@ -185,6 +198,7 @@
       try { localStorage.setItem(historyKey, JSON.stringify(records)); historySaved = JSON.stringify(JSON.parse(localStorage.getItem(historyKey))) === JSON.stringify(records); } catch {}
       renderHistory(historySaved ? records : readHistory(), !historySaved);
     } else renderHistory();
+    lastStoredPick = read(shownDay);
     showPick(pick);
     status.textContent = (shownDay.archived ? '지난 질문의 선택은 저장하지 않아요. ' : saved ? '오늘의 선택을 이 브라우저에 저장했어요. ' : '선택은 확인했지만 저장하지 못했어요. ') + prompts[shownDay.index][3];
   }));
@@ -247,6 +261,9 @@
     } finally { replyButton.disabled = false; }
   });
   refresh();
+  window.addEventListener('storage', event => {
+    if (event.key === key || event.key === historyKey || event.key === null) refresh();
+  });
   window.addEventListener('focus',refresh);
   document.addEventListener('visibilitychange',refresh);
   window.setInterval(refresh,60000);
