@@ -193,15 +193,17 @@
     shownDay = {...day,archived};
     const [question,a,b,hint] = prompts[day.index];
     document.getElementById('daily-date').textContent = day.date + ' · 한국시간 기준';
+    const record = archived ? readHistory().find(value => value.date === day.date && value.index === day.index) : null;
     const archiveNote = document.getElementById('daily-archive-note');
     archiveNote.hidden = !archived;
-    archiveNote.textContent = '친구가 공유한 지난 질문이에요. 선택은 저장하지 않고 함께 이야기해 볼 수 있어요.';
+    archiveNote.textContent = record
+      ? '이 브라우저에 남은 나의 취향 기록이에요. 다른 답을 골라도 지난 기록은 바뀌지 않아요.'
+      : '친구가 공유한 지난 질문이에요. 선택은 저장하지 않고 함께 이야기해 볼 수 있어요.';
     document.getElementById('daily-today-link').hidden = !archived;
-    document.getElementById('daily-title').textContent = archived ? '친구가 공유한 취향 대화' : '오늘의 취향 대화';
+    document.getElementById('daily-title').textContent = archived ? (record ? '내가 기록한 취향 대화' : '친구가 공유한 취향 대화') : '오늘의 취향 대화';
     document.getElementById('share-daily').textContent = archived ? '이 질문 친구에게 보내기' : '오늘의 질문 친구에게 보내기';
     document.getElementById('daily-question').textContent = question;
     buttons[0].textContent = a; buttons[1].textContent = b;
-    const record = archived ? readHistory().find(value => value.date === day.date && value.index === day.index) : null;
     const pick = archived ? record?.pick || null : read(day); showPick(pick);
     lastStoredPick = read(day);
     status.textContent = pick ? (archived ? '이 브라우저에 남은 지난 선택이에요. ' : '오늘 고른 답변이에요. ') + hint : '';
