@@ -98,8 +98,8 @@
     const continuity = streak ? ' · ' + (hasToday ? '오늘까지 ' : '어제까지 ') + streak + '일 연속' : '';
     const next = hasToday ? '. 내일 새 질문으로 이어가 보세요.' : '. 오늘 질문을 고르면 기록을 이어갈 수 있어요.';
     document.getElementById('daily-progress').textContent = progress + continuity + next;
-    const streak = document.getElementById('daily-streak');
-    streak.replaceChildren();
+    const streakPanel = document.getElementById('daily-streak');
+    streakPanel.replaceChildren();
     const recordDates = new Set(records.map(record => record.date));
     const dayLabels = ['오늘','어제','-2일','-3일','-4일','-5일','-6일'];
     for (let offset = 6; offset >= 0; offset--) {
@@ -111,10 +111,10 @@
       if (offset === 0) dot.classList.add('is-today');
       dot.setAttribute('aria-hidden', 'true');
       const label = document.createElement('span'); label.textContent = offset === 0 ? '오늘' : dayLabels[offset];
-      cell.append(dot, label); streak.append(cell);
+      cell.append(dot, label); streakPanel.append(cell);
     }
-    streak.hidden = !records.length;
-    streak.setAttribute('aria-label', progress + continuity);
+    streakPanel.hidden = !records.length;
+    streakPanel.setAttribute('aria-label', progress + continuity);
     document.getElementById('daily-history-summary').textContent = '최근 7일의 취향 기록' + (records.length ? ' · ' + records.length + '일' : '');
     const list = document.getElementById('daily-history-list');
     list.replaceChildren();
