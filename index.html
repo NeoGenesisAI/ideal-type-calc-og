@@ -164,8 +164,10 @@
   function read(day) {
     try {
       const value = JSON.parse(localStorage.getItem(key) || 'null');
-      return value?.date === day.date && value?.index === day.index && (value.pick === 'a' || value.pick === 'b') ? value.pick : null;
-    } catch { return null; }
+      if (value?.date === day.date && value?.index === day.index && (value.pick === 'a' || value.pick === 'b')) return value.pick;
+    } catch {}
+    // Recover the retained answer when the legacy single-day entry is missing or damaged.
+    return readHistory().find(record => record.date === day.date && record.index === day.index)?.pick || null;
   }
   function showPick(pick) {
     document.getElementById('daily-reply-action').hidden = !pick;
