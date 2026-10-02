@@ -85,7 +85,12 @@
     records.filter(validRecord).forEach(v => unique.set(v.date,{date:v.date,index:v.index,pick:v.pick}));
     return [...unique.values()].sort((a,b) => b.date.localeCompare(a.date)).slice(0,7);
   }
+  let historyRenderState;
   function renderHistory(records = readHistory(), failed = false) {
+    // Keep existing links (and keyboard focus) when saved records are unchanged.
+    const state = JSON.stringify([today().date, records, failed]);
+    if (state === historyRenderState) return;
+    historyRenderState = state;
     const dates = new Set(records.map(record => record.date));
     const currentDay = Date.parse(today().date + 'T00:00:00Z') / 86400000;
     const hasToday = dates.has(today().date);
