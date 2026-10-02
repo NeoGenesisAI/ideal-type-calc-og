@@ -159,8 +159,9 @@
     document.getElementById('share-daily').textContent = archived ? '이 질문 친구에게 보내기' : '오늘의 질문 친구에게 보내기';
     document.getElementById('daily-question').textContent = question;
     buttons[0].textContent = a; buttons[1].textContent = b;
-    const pick = archived ? null : read(day); showPick(pick);
-    status.textContent = pick ? '오늘 고른 답변이에요. ' + hint : '';
+    const record = archived ? readHistory().find(value => value.date === day.date && value.index === day.index) : null;
+    const pick = archived ? record?.pick || null : read(day); showPick(pick);
+    status.textContent = pick ? (archived ? '이 브라우저에 남은 지난 선택이에요. ' : '오늘 고른 답변이에요. ') + hint : '';
   }
   buttons.forEach((button,i) => button.addEventListener('click', () => {
     if (visibleDay().date !== shownDay.date || shownDay.archived !== (visibleDay().date !== today().date)) { refresh(); status.textContent = '날짜가 바뀌었어요. 표시된 질문을 다시 골라주세요.'; return; }
