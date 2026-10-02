@@ -101,7 +101,7 @@
     }
     const progress = records.length ? '최근 7일 중 ' + records.length + '일 기록' : '최근 7일의 기록이 아직 없어요';
     const continuity = streak ? ' · ' + (hasToday ? '오늘까지 ' : '어제까지 ') + streak + '일 연속' : '';
-    const next = hasToday ? (streak >= 3 ? '. 내일도 이어서 ' + (streak + 1) + '일 연속을 만들어 보세요.' : '. 내일 새 질문으로 이어가 보세요.') : '. 오늘 질문을 고르면 기록을 이어갈 수 있어요.';
+    const next = hasToday ? (streak === 7 ? '. 7일을 모두 채웠어요! 내일도 새 질문으로 기록을 이어가 보세요.' : streak >= 3 ? '. 내일도 이어서 ' + (streak + 1) + '일 연속을 만들어 보세요.' : '. 내일 새 질문으로 이어가 보세요.') : '. 오늘 질문을 고르면 기록을 이어갈 수 있어요.';
     document.getElementById('daily-progress').textContent = progress + continuity + next;
     const streakPanel = document.getElementById('daily-streak');
     streakPanel.replaceChildren();
