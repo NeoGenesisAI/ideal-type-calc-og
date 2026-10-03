@@ -207,8 +207,9 @@
     const day = ms / 86400000;
     return {date:requestedDate,index:((day % prompts.length) + prompts.length) % prompts.length};
   }
-  // A dated invitation should open with the question the friend shared.
-  if (sharedDay()) {
+  // Returning visitors continue their daily conversation before the introduction.
+  // Keep dated invitations on their shared question; read-only local history selects the layout.
+  if (sharedDay() || readHistory().length > 0) {
     document.querySelector('.hero').insertAdjacentElement('afterend', document.querySelector('.daily-preview'));
   }
   function visibleDay() { return sharedDay() || today(); }
