@@ -346,6 +346,11 @@
   const share = document.getElementById('share-daily');
   const shareStatus = document.getElementById('daily-share-status');
   const shareText = document.getElementById('daily-share-text');
+  let dailySharingBusy = false;
+  function setDailySharingBusy(busy) {
+    dailySharingBusy = busy;
+    for (const id of ['share-daily','copy-daily-reply']) document.getElementById(id).disabled = busy;
+  }
   const sameSharingDay = day => day.sharingRevision === sharingRevision && day.date === visibleDay().date && day.archived === (day.date !== today().date);
   async function copyQuestion(text, day) {
     try {
@@ -364,6 +369,7 @@
     }
   }
   share.addEventListener('click', async () => {
+    if (dailySharingBusy) return;
     refresh();
     const day = {...shownDay,sharingRevision};
     const [question,a,b] = prompts[day.index];
@@ -375,18 +381,21 @@
     const text = day.date + ' 취향 대화\n' + question + '\nA. ' + a + '\nB. ' + b + myChoice + '\n너는 어느 쪽이야?\n링크에서 같은 날짜의 질문을 함께 골라보세요.';
     shareStatus.textContent = '';
     shareText.hidden = true;
-    share.disabled = true;
+    setDailySharingBusy(true);
     try {
       if (!navigator.share) { await copyQuestion(text + '\n' + url, day); return; }
       await navigator.share({title:day.archived ? '친구와 취향 대화' : '오늘의 취향 대화',text,url});
+      if (!sameSharingDay(day)) return;
+      shareStatus.textContent = '공유창을 닫았어요. 친구도 링크에서 답을 고르면 두 사람의 선택을 비교할 수 있어요.';
     } catch (error) {
       if (!sameSharingDay(day)) return;
       if (error?.name === 'AbortError') shareStatus.textContent = '공유를 취소했어요.';
       else await copyQuestion(text + '\n' + url, day);
-    } finally { share.disabled = false; }
+    } finally { setDailySharingBusy(false); }
   });
   const replyButton = document.getElementById('copy-daily-reply');
   replyButton.addEventListener('click', async () => {
+    if (dailySharingBusy) return;
     refresh();
     const replyStatus = document.getElementById('daily-reply-status');
     const replyText = document.getElementById('daily-reply-text');
@@ -399,7 +408,7 @@
     const text = message + '\n' + url;
     replyStatus.textContent = '';
     replyText.hidden = true;
-    replyButton.disabled = true;
+    setDailySharingBusy(true);
     try {
       if (navigator.share) {
         try {
@@ -421,7 +430,7 @@
       replyText.value = text; replyText.hidden = false;
       replyText.focus(); replyText.select();
       replyStatus.textContent = '아래 내 답변을 선택해 복사한 뒤 친구에게 답장해 주세요.';
-    } finally { replyButton.disabled = false; }
+    } finally { setDailySharingBusy(false); }
   });
   function updateReminder(pick) {
     const panel = document.getElementById('daily-reminder');
