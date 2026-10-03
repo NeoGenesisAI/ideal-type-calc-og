@@ -261,12 +261,24 @@
     const day = visibleDay();
     const archived = day.date !== today().date;
     if (shownDay?.date === day.date && shownDay?.archived === archived) {
-      if (!archived) {
-        const storedPick = read(day);
-        if (storedPick !== lastStoredPick) {
-          lastStoredPick = storedPick;
-          document.getElementById('share-with-choice').checked = false;
-          showPick(storedPick);
+      const storedPick = archived
+        ? readHistory().find(record => record.date === day.date && record.index === day.index)?.pick || null
+        : read(day);
+      if (storedPick !== lastStoredPick) {
+        lastStoredPick = storedPick;
+        document.getElementById('share-with-choice').checked = false;
+        shareText.value = ''; shareText.hidden = true; shareStatus.textContent = '';
+        document.getElementById('daily-reply-text').value = '';
+        showPick(storedPick);
+        if (archived) {
+          document.getElementById('daily-title').textContent = storedPick ? '내가 기록한 취향 대화' : '친구가 공유한 취향 대화';
+          document.getElementById('daily-archive-note').textContent = storedPick
+            ? '이 브라우저에 남은 나의 취향 기록이에요. 다른 답을 골라도 지난 기록은 바뀌지 않아요.'
+            : '지난 질문이에요. 선택은 저장하지 않고 함께 이야기해 볼 수 있어요.';
+          status.textContent = storedPick
+            ? '다른 탭에서 변경된 지난 기록을 반영했어요. ' + prompts[day.index][3]
+            : '저장된 지난 답변이 지워졌어요. 다시 골라도 지난 기록은 저장되지 않아요.';
+        } else {
           status.textContent = storedPick ? '다른 탭에서 저장한 오늘의 답변을 반영했어요. ' + prompts[day.index][3] : '저장된 오늘의 답변이 지워졌어요. 다시 골라주세요.';
         }
       }
@@ -287,7 +299,7 @@
     document.getElementById('daily-question').textContent = question;
     buttons[0].textContent = a; buttons[1].textContent = b;
     const pick = archived ? record?.pick || null : read(day); showPick(pick);
-    lastStoredPick = read(day);
+    lastStoredPick = pick;
     status.textContent = pick ? (archived ? '이 브라우저에 남은 지난 선택이에요. ' : '오늘 고른 답변이에요. ') + hint : '';
   }
   buttons.forEach((button,i) => button.addEventListener('click', () => {
@@ -304,7 +316,9 @@
       try { localStorage.setItem(historyKey, JSON.stringify(records)); historySaved = JSON.stringify(JSON.parse(localStorage.getItem(historyKey))) === JSON.stringify(records); } catch {}
       renderHistory(historySaved ? records : readHistory(), !historySaved);
     } else renderHistory();
-    lastStoredPick = read(shownDay);
+    lastStoredPick = shownDay.archived
+      ? previousRecords.find(record => record.date === shownDay.date && record.index === shownDay.index)?.pick || null
+      : read(shownDay);
     showPick(pick);
     status.textContent = (shownDay.archived ? '지난 질문의 선택은 저장하지 않아요. ' : saved ? '오늘의 선택을 이 브라우저에 저장했어요. ' : '선택은 확인했지만 저장하지 못했어요. ') + prompts[shownDay.index][3];
   }));
