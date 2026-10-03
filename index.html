@@ -38,6 +38,18 @@
       startHelpTimer = setTimeout(() => {
         if (document.visibilityState !== 'visible') return;
         const help = document.querySelector('.search-help');
+        // Keep the search fallback beside the start action the visitor just used.
+        // The fixed mobile action uses the nearest visible main-page start link.
+        let anchor = link.closest('main') ? link : null;
+        if (!anchor) {
+          anchor = [...document.querySelectorAll('main a.cta')]
+            .filter(action => { const box = action.getBoundingClientRect(); return box.width > 0 && box.height > 0; })
+            .sort((a,b) => {
+              const distance = action => { const box = action.getBoundingClientRect(); return Math.abs((box.top + box.bottom) / 2 - innerHeight / 2); };
+              return distance(a) - distance(b);
+            })[0];
+        }
+        if (anchor) anchor.insertAdjacentElement('afterend', help);
         help.open = true;
         const searchStatus = document.getElementById('search-copy-status');
         if (!searchStatus.textContent) searchStatus.textContent = '토스가 열리지 않았다면 앱 이름으로 검색해 시작할 수 있어요.';
