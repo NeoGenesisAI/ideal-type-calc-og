@@ -232,6 +232,9 @@
     const friendPanel = document.getElementById('daily-friend-choice');
     friendPanel.hidden = !friendPick;
     if (friendPick) {
+      // Keep the invitation before the choices; show the comparison beside the answer feedback.
+      const comparisonAnchor = pick ? status : document.querySelector('.daily-options');
+      comparisonAnchor.insertAdjacentElement(pick ? 'afterend' : 'beforebegin', friendPanel);
       document.getElementById('daily-comparison-title').textContent = pick ? '두 사람의 선택' : '공유 링크에 담긴 친구의 선택';
       document.getElementById('daily-comparison-answers').classList.toggle('is-revealed', !!pick);
       document.getElementById('daily-friend-label').hidden = !pick;
