@@ -386,7 +386,7 @@
       if (!navigator.share) { await copyQuestion(text + '\n' + url, day); return; }
       await navigator.share({title:day.archived ? '친구와 취향 대화' : '오늘의 취향 대화',text,url});
       if (!sameSharingDay(day)) return;
-      shareStatus.textContent = '공유창을 닫았어요. 친구도 링크에서 답을 고르면 두 사람의 선택을 비교할 수 있어요.';
+      shareStatus.textContent = '공유창을 닫았어요. 친구에게 같은 질문에서 어느 쪽을 골랐는지 물어보세요.';
     } catch (error) {
       if (!sameSharingDay(day)) return;
       if (error?.name === 'AbortError') shareStatus.textContent = '공유를 취소했어요.';
