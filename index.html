@@ -23,6 +23,28 @@
   const manual = document.getElementById('manual-link');
   manual.value = url;
   const searchName = '이상형 찾기 테스트';
+  // Offer the existing search route when a start tap leaves this page in front.
+  let startHelpTimer;
+  function cancelStartHelp() { clearTimeout(startHelpTimer); }
+  document.querySelectorAll('a[href="intoss://ideal-type-calc"]').forEach(link => {
+    link.addEventListener('click', event => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+      cancelStartHelp();
+      startHelpTimer = setTimeout(() => {
+        if (document.visibilityState !== 'visible') return;
+        const help = document.querySelector('.search-help');
+        help.open = true;
+        const searchStatus = document.getElementById('search-copy-status');
+        if (!searchStatus.textContent) searchStatus.textContent = '토스가 열리지 않았다면 앱 이름으로 검색해 시작할 수 있어요.';
+        help.querySelector('summary').focus();
+      }, 1800);
+    });
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') cancelStartHelp();
+  });
+  window.addEventListener('pagehide', cancelStartHelp);
+  window.addEventListener('blur', cancelStartHelp);
   document.getElementById('copy-search-name').addEventListener('click', async () => {
     const searchStatus = document.getElementById('search-copy-status');
     const searchInput = document.getElementById('manual-search-name');
