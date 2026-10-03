@@ -192,6 +192,17 @@
   const buttons = [document.getElementById('daily-a'), document.getElementById('daily-b')];
   const status = document.getElementById('daily-status');
   let shownDay;
+  let sharingRevision = 0;
+  function invalidateSharingContent(resetConsent = true) {
+    sharingRevision++;
+    if (resetConsent) document.getElementById('share-with-choice').checked = false;
+    for (const id of ['daily-share-text','daily-reply-text']) {
+      const field = document.getElementById(id); field.value = ''; field.hidden = true;
+    }
+    document.getElementById('daily-share-status').textContent = '';
+    document.getElementById('daily-reply-status').textContent = '';
+  }
+  document.getElementById('share-with-choice').addEventListener('change', () => invalidateSharingContent(false));
   let lastStoredPick;
   function today() {
     const day = Math.floor((Date.now() + 9 * 3600000) / 86400000);
@@ -222,6 +233,7 @@
     return readHistory().find(record => record.date === day.date && record.index === day.index)?.pick || null;
   }
   function showPick(pick) {
+    invalidateSharingContent();
     updateReminder(pick);
     document.getElementById('daily-reply-action').hidden = !pick;
     document.getElementById('daily-reply-disclosure').hidden = !pick;
@@ -334,7 +346,7 @@
   const share = document.getElementById('share-daily');
   const shareStatus = document.getElementById('daily-share-status');
   const shareText = document.getElementById('daily-share-text');
-  const sameSharingDay = day => day.date === visibleDay().date && day.archived === (day.date !== today().date);
+  const sameSharingDay = day => day.sharingRevision === sharingRevision && day.date === visibleDay().date && day.archived === (day.date !== today().date);
   async function copyQuestion(text, day) {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
@@ -353,7 +365,7 @@
   }
   share.addEventListener('click', async () => {
     refresh();
-    const day = {...shownDay};
+    const day = {...shownDay,sharingRevision};
     const [question,a,b] = prompts[day.index];
     const selected = buttons.findIndex(button => button.getAttribute('aria-pressed') === 'true');
     const includeChoice = selected >= 0 && document.getElementById('share-with-choice').checked;
@@ -380,7 +392,7 @@
     const replyText = document.getElementById('daily-reply-text');
     const selected = buttons.findIndex(button => button.getAttribute('aria-pressed') === 'true');
     if (selected < 0) { replyStatus.textContent = '표시된 질문에서 내 답변을 먼저 골라주세요.'; return; }
-    const day = {...shownDay};
+    const day = {...shownDay,sharingRevision};
     const prompt = prompts[day.index];
     const url = 'https://neogenesisai.github.io/ideal-type-calc-og/?day=' + day.date + '&pick=' + (selected === 0 ? 'a' : 'b') + '#daily-title';
     const message = day.date + ' 취향 대화\n' + prompt[0] + '\n내 선택: ' + (selected === 0 ? 'A. ' + prompt[1] : 'B. ' + prompt[2]) + '\n너의 선택도 알려줘!';
