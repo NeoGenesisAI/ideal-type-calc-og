@@ -91,17 +91,30 @@
       manual.select();
     }
   }
-  copyButton.addEventListener('click', () => copyLink());
+  // These entries send the same invitation; allow only one pending operation.
+  let invitationBusy = false;
+  function setInvitationBusy(busy) {
+    invitationBusy = busy;
+    for (const button of [shareButton, resultShareButton, copyButton]) button.disabled = busy;
+  }
+  copyButton.addEventListener('click', async () => {
+    if (invitationBusy) return;
+    setInvitationBusy(true);
+    try { await copyLink(); } finally { setInvitationBusy(false); }
+  });
   async function shareTest(button, targetStatus) {
+    if (invitationBusy) return;
+    setInvitationBusy(true);
     targetStatus.textContent = '';
-    if (!navigator.share) { await copyLink(targetStatus); return; }
-    button.disabled = true;
     try {
-      await navigator.share({title: '이상형 찾기 테스트', text: '이상형 찾기 테스트에서 10문항으로 내 취향을 찾아봐요. 링크가 열리지 않으면 토스 앱에서 "이상형 찾기 테스트"를 검색해 시작할 수 있어요.', url});
-    } catch (error) {
-      if (error.name === 'AbortError') targetStatus.textContent = '공유를 취소했어요.';
-      else await copyLink(targetStatus);
-    } finally { button.disabled = false; }
+      if (!navigator.share) { await copyLink(targetStatus); return; }
+      try {
+        await navigator.share({title: '이상형 찾기 테스트', text: '이상형 찾기 테스트에서 10문항으로 내 취향을 찾아봐요. 링크가 열리지 않으면 토스 앱에서 "이상형 찾기 테스트"를 검색해 시작할 수 있어요.', url});
+      } catch (error) {
+        if (error?.name === 'AbortError') targetStatus.textContent = '공유를 취소했어요.';
+        else await copyLink(targetStatus);
+      }
+    } finally { setInvitationBusy(false); }
   }
   shareButton.addEventListener('click', () => shareTest(shareButton, status));
   resultShareButton.addEventListener('click', () => shareTest(resultShareButton, resultShareStatus));
