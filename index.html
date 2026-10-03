@@ -287,6 +287,12 @@
       }
       return;
     }
+    // A new visible day invalidates fallback content and answer-sharing consent.
+    if (shownDay) {
+      document.getElementById('share-with-choice').checked = false;
+      shareText.value = ''; shareText.hidden = true; shareStatus.textContent = '';
+      document.getElementById('daily-reply-text').value = '';
+    }
     shownDay = {...day,archived};
     const [question,a,b,hint] = prompts[day.index];
     document.getElementById('daily-date').textContent = day.date + ' · 한국시간 기준';
@@ -328,13 +334,16 @@
   const share = document.getElementById('share-daily');
   const shareStatus = document.getElementById('daily-share-status');
   const shareText = document.getElementById('daily-share-text');
-  async function copyQuestion(text) {
+  const sameSharingDay = day => day.date === visibleDay().date && day.archived === (day.date !== today().date);
+  async function copyQuestion(text, day) {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(text);
+      if (!sameSharingDay(day)) return;
       shareText.hidden = true;
       shareStatus.textContent = '질문과 링크를 복사했어요. 친구에게 붙여넣어 보내주세요.';
     } catch {
+      if (!sameSharingDay(day)) return;
       shareText.value = text;
       shareText.hidden = false;
       shareText.focus();
@@ -356,11 +365,12 @@
     shareText.hidden = true;
     share.disabled = true;
     try {
-      if (!navigator.share) { await copyQuestion(text + '\n' + url); return; }
+      if (!navigator.share) { await copyQuestion(text + '\n' + url, day); return; }
       await navigator.share({title:day.archived ? '친구와 취향 대화' : '오늘의 취향 대화',text,url});
     } catch (error) {
+      if (!sameSharingDay(day)) return;
       if (error?.name === 'AbortError') shareStatus.textContent = '공유를 취소했어요.';
-      else await copyQuestion(text + '\n' + url);
+      else await copyQuestion(text + '\n' + url, day);
     } finally { share.disabled = false; }
   });
   const replyButton = document.getElementById('copy-daily-reply');
@@ -382,16 +392,20 @@
       if (navigator.share) {
         try {
           await navigator.share({title: '내 취향 대화 답변', text: message, url});
+          if (!sameSharingDay(day)) return;
           replyStatus.textContent = '공유창을 닫았어요. 친구의 답변도 받아 같은 질문에서 비교해 보세요.';
           return;
         } catch (error) {
+          if (!sameSharingDay(day)) return;
           if (error.name === 'AbortError') { replyStatus.textContent = '답변 공유를 취소했어요.'; return; }
         }
       }
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(text);
+      if (!sameSharingDay(day)) return;
       replyStatus.textContent = '내 답변과 질문 링크를 복사했어요. 친구와의 대화에 붙여넣어 답장해 주세요.';
     } catch {
+      if (!sameSharingDay(day)) return;
       replyText.value = text; replyText.hidden = false;
       replyText.focus(); replyText.select();
       replyStatus.textContent = '아래 내 답변을 선택해 복사한 뒤 친구에게 답장해 주세요.';
