@@ -83,10 +83,12 @@
       manual.hidden = true;
       targetStatus.textContent = '링크를 복사했어요. 친구에게 붙여넣어 보내주세요.';
     } catch {
+      // Keep the manual link beside the feedback for the share action that failed.
+      targetStatus.insertAdjacentElement('afterend', manual);
       manual.hidden = false;
+      targetStatus.textContent = '아래 링크를 선택해 복사한 뒤 친구에게 보내주세요.';
       manual.focus();
       manual.select();
-      targetStatus.textContent = '아래 링크를 선택해 복사한 뒤 친구에게 보내주세요.';
     }
   }
   copyButton.addEventListener('click', () => copyLink());
