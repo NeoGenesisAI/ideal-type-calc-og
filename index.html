@@ -203,9 +203,12 @@
     const friendPanel = document.getElementById('daily-friend-choice');
     friendPanel.hidden = !friendPick;
     if (friendPick) {
-      document.getElementById('daily-friend-answer').textContent = prompts[shownDay.index][friendPick === 'a' ? 1 : 2];
+      // Reveal the friend's answer only after an independent choice.
+      document.getElementById('daily-friend-answer').textContent = pick
+        ? prompts[shownDay.index][friendPick === 'a' ? 1 : 2]
+        : '친구가 먼저 골랐어요. 나는 어느 쪽일까요?';
       document.getElementById('daily-friend-comparison').textContent = !pick
-        ? '나는 어느 쪽인지 아래에서 골라보세요.'
+        ? '내 선택을 고르면 친구의 답도 함께 볼 수 있어요.'
         : pick === friendPick
           ? '이 질문에서는 같은 선택을 했어요. 왜 골랐는지 서로 이야기해 보세요.'
           : '이 질문에서는 다른 선택을 했어요. 서로의 이유를 들어보세요.';
