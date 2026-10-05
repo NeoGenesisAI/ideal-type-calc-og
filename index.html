@@ -1585,8 +1585,11 @@ window.getChemistryInfo = function(idA, idB) {
     }
   });
 
-  // Check initial state: friend banner vs saved result
-  if (friendArchId !== null && archetypes[friendArchId]) {
+  // Reuse the recipient's own result for the current friend, without rewriting it.
+  const saved = readSaved();
+  if (saved) {
+    renderResult(saved.archetype, false);
+  } else if (friendArchId !== null && archetypes[friendArchId]) {
     const fArch = archetypes[friendArchId];
     const fBanner = document.getElementById("quiz-friend-banner");
     fBanner.hidden = false;
@@ -1599,11 +1602,6 @@ window.getChemistryInfo = function(idA, idB) {
       fTags.append(sp);
     });
     document.getElementById("friend-banner-msg").textContent = `친구가 이상형 카드 [${fArch.name}]를 공유했어요! 내 이상형을 찾고 싱크로율을 확인해 보세요.`;
-  } else {
-    const saved = readSaved();
-    if (saved) {
-      renderResult(saved.archetype, false);
-    }
   }
 })();
 </script>
